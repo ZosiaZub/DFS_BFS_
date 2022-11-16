@@ -62,17 +62,40 @@ def printMatrix(matrix):
         print(matrix[r])
 
 
+def infinity(matrix, row, column):
+    for i in range(len(matrix)):
+        matrix[row][i] = -1
+        matrix[i][column] = -1
+
+    matrix[row][column] = -1
+    return matrix
+
+
 def BnB(matrix):
     upper = -1
+    start_node = 0
     nodes = len(matrix)
-    copy_of_matrix = copy.deepcopy(matrix)
-    reduced_matrix = reduceMatrix(matrix)[0]
-    cost = reduceMatrix(matrix)[1]
+    main_matrix = copy.deepcopy(matrix)
 
-    for n in range(nodes):
-        for p in range(nodes):
-            if n != p:
-                pass
+    # lista zredukowanych macierzy dla każdego z wierzchłków
+    reduced_matrix = [reduceMatrix(matrix)[0]]
+
+    # lista kosztów dotarcia do danego wierzchołka
+    cost_of_nodes = [reduceMatrix(matrix)[1]]
+
+    for n in range(1, nodes):
+        reduced_matrix.append(infinity(copy.deepcopy(reduced_matrix[start_node]), start_node, n))
+
+        # koszt dotarcia do poprzedniego wierzchołka
+        a = cost_of_nodes[start_node]
+
+        # koszt ścieżki od poprzedniego do aktualnego wierzchołka z aktualnej macierzy kosztów
+        b = 0
+
+        # suma powstała ze zredukowania aktualnej macierzy kosztów
+        c = 0
+
+    return reduced_matrix[0], cost_of_nodes
 
 
 
@@ -84,4 +107,6 @@ if __name__ == '__main__':
         print(matrix[r])
     print(" ")
     # printMatrix(listOfColumns(matrix))
-    printMatrix(reduceMatrix(matrix))
+    # printMatrix(reduceMatrix(matrix))
+    # printMatrix(BnB(matrix))
+    # print(BnB(matrix))
