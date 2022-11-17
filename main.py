@@ -61,12 +61,16 @@ def reduceMatrix(matrix):
     return listOfColumns(columns), cost
 
 
-def infinity(matrix, row, column, path):
-    for i in matrix:
-        matrix[row][matrix.index(i)] = -1
-        i[column] = -1
+def infinity(matrix, start, destination, path):
+    for i in range(len(matrix)):
+        matrix[start][i] = -1
+        matrix[i][destination] = -1
 
-    matrix[column][row] = -1
+    for p in path:
+        matrix[p][destination] = -1
+
+    matrix[destination][start] = -1
+
     return matrix
 
 
@@ -90,7 +94,7 @@ def reductionAndSumPerNode(matrix, n, start_node, start_cost, path):
     rm, cost = reduceMatrix(inf_matrix)
 
     # koszt dotarcia do poprzedniego wierzchołka
-    a = start_cost
+    # a = start_cost
 
     # koszt ścieżki od poprzedniego do aktualnego wierzchołka z poprzedniej macierzy kosztów
     b = matrix[start_node][n]
@@ -98,8 +102,8 @@ def reductionAndSumPerNode(matrix, n, start_node, start_cost, path):
     # suma powstała ze zredukowania aktualnej macierzy kosztów
     c = cost
 
-    suma = a + b + c
-
+    # suma = a + b + c
+    suma = b + c
     return rm, suma
 
 
@@ -122,14 +126,13 @@ def reductionAndSumPerNode(matrix, n, start_node, start_cost, path):
 
 
 def choosingPath(first_matrix, start_node, start_cost):
-    upper = start_cost
+    upper_bound = start_cost
     non_visited = nonVisitedList(len(first_matrix))
     non_visited.pop(start_node)
     path = [0]
-    # costs_of_nodes = copy.deepcopy(cs_list)
-    # reduced_matrices = copy.deepcopy(rms_list)
     costs_of_nodes = []
     reduced_matrices = []
+    idx = 0
     while len(non_visited) > 0:
         costs_of_nodes.clear()
         reduced_matrices.clear()
@@ -138,29 +141,23 @@ def choosingPath(first_matrix, start_node, start_cost):
             rm, suma = reductionAndSumPerNode(first_matrix, n, start_node, start_cost, p)
             reduced_matrices.append(rm)
             costs_of_nodes.append(suma)
+        upper_bound += min(costs_of_nodes)
         idx = costs_of_nodes.index(min(costs_of_nodes))
         first_matrix = reduced_matrices[idx]
         start_node = non_visited[idx]
-        start_cost = costs_of_nodes[idx]
+        start_cost = upper_bound
         path.append(non_visited[idx])
         non_visited.pop(idx)
-    upper = min(costs_of_nodes)
 
-    return path, upper
+    path.append(0)
+
+    return path, upper_bound
 
 
 def BnB(matrix):
-    list_of_nodes = nonVisitedList(len(matrix))
-    nodes = len(matrix)
+
     main_matrix = copy.deepcopy(matrix)
     reduced_matrix, cost_of_node = reduceMatrix(main_matrix)
-    # lista zredukowanych macierzy dla każdego z wierzchłków
-    # reduced_matrices = []
-    # reduced_matrices.append(reduced_matrix)
-    #
-    # # lista kosztów dotarcia do danego wierzchołka
-    # costs_of_nodes = []
-    # costs_of_nodes.append(cost_of_node)
     start_node = 0
     path, minimal_cost = choosingPath(reduced_matrix, start_node, cost_of_node)
 
