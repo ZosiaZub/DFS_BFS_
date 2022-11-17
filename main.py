@@ -2,6 +2,9 @@ import copy
 
 import numpy as numpy
 
+# to nic nie robi, potrzebuję zrobić commita jeszcze raz tego samego, ale z poprawna nazwą
+x = 0
+
 visited = []
 n = 0
 
