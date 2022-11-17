@@ -2,9 +2,6 @@ import copy
 
 import numpy as numpy
 
-# to nic nie robi, potrzebuję zrobić commita jeszcze raz tego samego, ale z poprawna nazwą
-x = 0
-
 
 def readFromFile(file):
     file = open(file, "r")
@@ -64,7 +61,6 @@ def reduceMatrix(matrix):
     return listOfColumns(columns), cost
 
 
-# -1 w danym wierszu i danej kolumnie oraz w komórce dla ścieżki odwrotnej
 def infinity(matrix, row, column):
     for i in matrix:
         matrix[row][matrix.index(i)] = -1
@@ -76,9 +72,15 @@ def infinity(matrix, row, column):
 
 def visitedList(nodes):
     list = []
-    for i in range(1, nodes):
+    for i in range(nodes):
         list.append(i)
     return list
+
+
+def findIndex(list, value):
+    for i in range(len(list)):
+        if list[i] == value:
+            return i
 
 
 def reductionAndSumPerNode(matrix, n, start_node, start_cost):
@@ -101,6 +103,19 @@ def reductionAndSumPerNode(matrix, n, start_node, start_cost):
     return rm, suma
 
 
+def choosingNode(matrix, start_node, start_cost, nodes_list, rms_list, cs_list, path):
+    costs_of_nodes = copy.deepcopy(cs_list)
+    reduced_matrices = copy.deepcopy(rms_list)
+    for n in nodes_list:
+        rm, suma = reductionAndSumPerNode(matrix, n, start_node, start_cost)
+        reduced_matrices.append(rm)
+        costs_of_nodes.append(suma)
+
+    id_of_lowest_cost = findIndex(costs_of_nodes, min(costs_of_nodes))
+    return reduced_matrices, costs_of_nodes, id_of_lowest_cost
+
+
+
 def BnB(matrix):
     upper = -1
     list_of_nodes = visitedList(len(matrix))
@@ -112,20 +127,31 @@ def BnB(matrix):
     reduced_matrices.append(reduced_matrix)
 
     # lista kosztów dotarcia do danego wierzchołka
-    cost_of_nodes = []
-    cost_of_nodes.append(cost_of_node)
+    costs_of_nodes = []
+    costs_of_nodes.append(cost_of_node)
 
     non_visited = []
     non_visited.append(visitedList(len(matrix)))
 
+    path = []
     start_node = 0
-    for n in list_of_nodes:
-        rm, suma = reductionAndSumPerNode(reduced_matrices[start_node], n, start_node, cost_of_nodes[start_node])
-        reduced_matrices.append(rm)
-        cost_of_nodes.append(suma)
-        non_visited[start_node].remove(n)
+    path.append(start_node)
+    non_visited[start_node].pop(start_node)
 
-    return reduced_matrices, cost_of_nodes
+    # for i in list_of_nodes:
+    rm, c, id = choosingNode(reduced_matrices[start_node],
+                            start_node,
+                            costs_of_nodes[start_node],
+                            non_visited[start_node],
+                            reduced_matrices,
+                            costs_of_nodes,
+                            path)
+    non_visited[start_node].pop(id)
+    path.append(id)
+    reduced_matrices.extend(rm)
+    costs_of_nodes.extend(c)
+
+    return reduced_matrices, costs_of_nodes
 
 
 def printMatrix(matrix):
