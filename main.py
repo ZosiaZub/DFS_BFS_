@@ -61,15 +61,16 @@ def reduceMatrix(matrix):
     return listOfColumns(columns), cost
 
 
-def infinity(matrix, start, destination, path):
+def infinity(matrix, start, destination):
     for i in range(len(matrix)):
         matrix[start][i] = -1
         matrix[i][destination] = -1
 
-    for p in path:
-        matrix[p][destination] = -1
+    # for p in path:
+    #     matrix[p][destination] = -1
 
     matrix[destination][start] = -1
+    matrix[destination][0] = -1
 
     return matrix
 
@@ -87,14 +88,11 @@ def findIndex(list, value):
             return i
 
 
-def reductionAndSumPerNode(matrix, n, start_node, start_cost, path):
+def reductionAndSumPerNode(matrix, n, start_node, start_cost):
     # zczytanie zredukowanej kopii poprzedniej macierzy i kosztu tej akcji
     copied_matrix = copy.deepcopy(matrix)
-    inf_matrix = infinity(copied_matrix, 0, n, path)
+    inf_matrix = infinity(copied_matrix, start_node, n)
     rm, cost = reduceMatrix(inf_matrix)
-
-    # koszt dotarcia do poprzedniego wierzchołka
-    # a = start_cost
 
     # koszt ścieżki od poprzedniego do aktualnego wierzchołka z poprzedniej macierzy kosztów
     b = matrix[start_node][n]
@@ -102,7 +100,6 @@ def reductionAndSumPerNode(matrix, n, start_node, start_cost, path):
     # suma powstała ze zredukowania aktualnej macierzy kosztów
     c = cost
 
-    # suma = a + b + c
     suma = b + c
     return rm, suma
 
@@ -132,13 +129,11 @@ def choosingPath(first_matrix, start_node, start_cost):
     path = [0]
     costs_of_nodes = []
     reduced_matrices = []
-    idx = 0
     while len(non_visited) > 0:
         costs_of_nodes.clear()
         reduced_matrices.clear()
         for n in non_visited:
-            p = copy.deepcopy(path)
-            rm, suma = reductionAndSumPerNode(first_matrix, n, start_node, start_cost, p)
+            rm, suma = reductionAndSumPerNode(first_matrix, n, start_node, start_cost)
             reduced_matrices.append(rm)
             costs_of_nodes.append(suma)
         upper_bound += min(costs_of_nodes)
@@ -218,7 +213,8 @@ def writeAnswerToFile(path, cost, file):
 
 
 if __name__ == '__main__':
-    file = "hindus.txt"
+    # file = "hindus.txt"
+    file = "tsp_12.txt"
     matrix = readFromFile(file)
     file = open("wyniki.txt", "w")
 
