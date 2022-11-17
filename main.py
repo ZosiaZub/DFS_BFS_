@@ -5,9 +5,6 @@ import numpy as numpy
 # to nic nie robi, potrzebuję zrobić commita jeszcze raz tego samego, ale z poprawna nazwą
 x = 0
 
-visited = []
-n = 0
-
 
 def readFromFile(file):
     file = open(file, "r")
@@ -77,42 +74,56 @@ def infinity(matrix, row, column):
     return matrix
 
 
+def visitedList(nodes):
+    list = []
+    for i in range(1, nodes):
+        list.append(i)
+    return list
+
+
+def reductionAndSumPerNode(matrix, n, start_node, start_cost):
+    # zczytanie zredukowanej kopii poprzedniej macierzy i kosztu tej akcji
+    copied_matrix = copy.deepcopy(matrix)
+    inf_matrix = infinity(copied_matrix, 0, n)
+    rm, cost = reduceMatrix(inf_matrix)
+
+    # koszt dotarcia do poprzedniego wierzchołka
+    a = start_cost
+
+    # koszt ścieżki od poprzedniego do aktualnego wierzchołka z poprzedniej macierzy kosztów
+    b = matrix[start_node][n]
+
+    # suma powstała ze zredukowania aktualnej macierzy kosztów
+    c = cost
+
+    suma = a + b + c
+
+    return rm, suma
+
+
 def BnB(matrix):
     upper = -1
-    start_node = 0
-    nodes = len(matrix)
+    list_of_nodes = visitedList(len(matrix))
     main_matrix = copy.deepcopy(matrix)
+    reduced_matrix, cost_of_node = reduceMatrix(main_matrix)
 
     # lista zredukowanych macierzy dla każdego z wierzchłków
-    reduced_matrix, cost_of_node = reduceMatrix(main_matrix)
     reduced_matrices = []
     reduced_matrices.append(reduced_matrix)
+
+    # lista kosztów dotarcia do danego wierzchołka
     cost_of_nodes = []
     cost_of_nodes.append(cost_of_node)
-    # lista kosztów dotarcia do danego wierzchołka
 
-    for n in range(1, nodes):
-        copied_matrix = []
-        # zczytanie zredukowanej kopii poprzedniej macierzy i kosztu tej akcji
-        copied_matrix = copy.deepcopy(reduced_matrices[0])
-        inf_matrix = infinity(copied_matrix, 0, n)
-        rm, cost = reduceMatrix(inf_matrix)
+    non_visited = []
+    non_visited.append(visitedList(len(matrix)))
 
-        # dodanie aktualnej, zredukowanej macierzy do listy
-        # reduced_matrix.append(reduceMatrix(infinity(copy.deepcopy(reduced_matrix[start_node]), start_node, n))[0])
+    start_node = 0
+    for n in list_of_nodes:
+        rm, suma = reductionAndSumPerNode(reduced_matrices[start_node], n, start_node, cost_of_nodes[start_node])
         reduced_matrices.append(rm)
-
-        # koszt dotarcia do poprzedniego wierzchołka
-        a = cost_of_nodes[start_node]
-
-        # koszt ścieżki od poprzedniego do aktualnego wierzchołka z poprzedniej macierzy kosztów
-        b = reduced_matrices[start_node][start_node][n]
-
-        # suma powstała ze zredukowania aktualnej macierzy kosztów
-        c = cost
-
-        suma = a + b + c
         cost_of_nodes.append(suma)
+        non_visited[start_node].remove(n)
 
     return reduced_matrices, cost_of_nodes
 
@@ -125,30 +136,18 @@ def printMatrix(matrix):
 def writeToFile(list_of_matrices, list_of_costs, file):
     for m in list_of_matrices:
         index = list_of_matrices.index(m)
-        file.write("macierz " + str(index) + "\n" )
+        file.write("_______________________MACIERZ " + str(index) + "\n" )
         for r in m:
             file.write(str(r))
             file.write("\n")
         file.write(str(list_of_costs[index]))
-        file.write("\n\n\n")
+        file.write("\n\n")
 
 
 if __name__ == '__main__':
     file = "hindus.txt"
-    # matrix = diagonalLine(readFromFile(file))
     matrix = readFromFile(file)
-    start = 0
-    # printMatrix(matrix)
-    # print(" ")
-    # printMatrix(BnB(matrix))
     file = open("wyniki.txt", "w")
 
-    # file.write("macierz glowna\n")
-    # writeToFile(matrix, str(0), file)
-
-    rum, co = BnB(matrix)
-    writeToFile(rum, co, file)
-
-    # main_matrix = reduceMatrix(copy.deepcopy(matrix))
-    # # printMatrix(reduceMatrix(infinity(main_matrix, 0, 2)))
-    # printMatrix(infinity(main_matrix, 0, 2))
+    rm, c = BnB(matrix)
+    writeToFile(rm, c, file)
